@@ -1,45 +1,55 @@
-const myLibrary = [];
+// For Handelling single book
+class Book{
+    constructor(title, author, pages, read){
+        this.id = crypto.randomUUID();
+        this.title = title;
+        this.author = author;
+        this.pages = pages;
+        this.read = read;
+    }
 
-//Constructor for creating book objects
-
-function Book(title, author, pages, read){
-    this.id = crypto.randomUUID();
-    this.title = title;
-    this.author = author;
-    this.pages = pages;
-    this.read = read;
-}
-
-//function to add books to library/ creating book objects
-
-function addBookToLibrary(title, author, pages, read) {
-    const newBook = new Book(title, author, pages, read);
-    myLibrary.push(newBook);
-}
-//function to toggle read status
-
-Book.prototype.toggleRead = function(){
-    this.read =  !this.read;
-}
-
-// function to toggle specific book
-
-function toggleBookRead(id){
-    const book = myLibrary.find(book => book.id === id);
-    if(book){
-        book.toggleRead();
+    toggleRead(){
+        this.read = !this.read;
     }
 }
+// for handelling books collection
+class Library{
+    constructor(){
+        this.books = [];
+    }
+    addBook(book){
+
+        this.books.push(book);
+    }
+
+    removeBook(id){
+      const index = this.books.findIndex(book => book.id === id);
+      if(index !== -1){
+        this.books.splice(index,1);
+      }
+    }
+
+    toggleRead(id){
+       const book = this.books.find(book => book.id === id);
+       if(book){
+           book.toggleRead();
+       }
+    }
+}
+const library = new Library();
+
+
+// UI functions 
 const libraryContainer = document.getElementById("library");
 
-// function to display library
-
-function displayLibrary(){
+//DISPLAY LIBRARY
+function displayLibrary(books){
     libraryContainer.innerHTML = "";
-    myLibrary.forEach(book => {
 
-    //creating new book div for each books
+    books.forEach(book => {
 
+    // creating new book div for each books
+    
       const bookDiv = document.createElement("div");
       const toggleReadButton = document.createElement("button");
       toggleReadButton.textContent = book.read ? "Mark as Unread":"Mark as Read"
@@ -48,13 +58,13 @@ function displayLibrary(){
       removeButton.textContent = "Remove";
       removeButton.addEventListener("click", (e) => {
         const id = e.target.parentElement.dataset.bookId;
-        removeBookFromLibrary(id);
-        displayLibrary();
+        library.removeBook(id);
+        displayLibrary(library.books);
       });
       toggleReadButton.addEventListener("click",(e)=>{
         const id = e.target.parentElement.dataset.bookId;
-        toggleBookRead(id);
-        displayLibrary();
+        library.toggleRead(id);
+        displayLibrary(library.books);
       });
       const info = document.createElement("p");
       info.textContent = 
@@ -65,20 +75,6 @@ function displayLibrary(){
       libraryContainer.appendChild(bookDiv);
     });
 }
-
-// function to remove book from library
-
-function removeBookFromLibrary(id){
-    const index = myLibrary.findIndex(book => book.id === id );
-    if(index !==-1){
-        myLibrary.splice(index,1);
-    }
-}
-
-// displayLibrary();
-
-addBookToLibrary("The Psychology of Money","Morgan Housel", 400,true);
-addBookToLibrary("Rich Dad Poor Dad","Robert Kiyosaki", 400,false);
 
 //Clicking add book button
 
@@ -96,11 +92,10 @@ form.addEventListener("submit", (e) => {
     const author = document.getElementById("author").value;
     const pages = +document.getElementById("pages").value;
     const read = document.getElementById("read").checked;
-    addBookToLibrary(title, author, pages, read);
-    displayLibrary();
+    
+    const book = new Book(title, author, pages, read);
+    library.addBook(book);
+    displayLibrary(library.books);
     form.reset();
 })
-displayLibrary();
-displayLibrary();
 
-//selecting the library div
